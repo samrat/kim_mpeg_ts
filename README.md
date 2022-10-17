@@ -14,7 +14,7 @@ https://github.com/membraneframework/membrane_mpegts_plugin.
 ```elixir
 def deps do
   [
-    {:kim_hls, github: "kim-company/kim_hls"}
+    {:kim_mpeg_ts, github: "kim-company/kim_mpeg_ts"}
   ]
 end
 ```

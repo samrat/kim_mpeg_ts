@@ -22,7 +22,7 @@ defmodule MPEG.TS.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:qex, "~> 0.5"},
+      {:kim_q, github: "kim-company/kim_q"}
     ]
   end
 

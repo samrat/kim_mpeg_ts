@@ -72,7 +72,7 @@ defmodule MPEG.TS.Demuxer do
   def size(%__MODULE__{demuxed_queues: queues}, stream_id) do
     case Map.get(queues, stream_id) do
       nil -> 0
-      %StreamQueue{ready: ready} -> Enum.count(ready)
+      %StreamQueue{ready: %Q{count: count}} -> count
     end
   end
 

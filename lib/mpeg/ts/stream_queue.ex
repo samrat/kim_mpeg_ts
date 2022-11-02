@@ -14,13 +14,17 @@ defmodule MPEG.TS.StreamQueue do
   defstruct [:stream_id, :partials, :ready]
 
   def new(stream_id) do
-    %__MODULE__{stream_id: stream_id, partials: Qex.new(), ready: Qex.new()}
+    %__MODULE__{
+      stream_id: stream_id,
+      partials: [],
+      ready: Q.new("ts-ready-#{stream_id}")
+    }
   end
 
   def push_es_packets(state = %__MODULE__{partials: partials, ready: ready}, packets) do
     {complete_chunks, [partials]} =
       partials
-      |> Qex.join(Qex.new(packets))
+      |> Enum.concat(packets)
       |> Enum.map(fn x = %Packet{pid: pid} ->
         if pid != state.stream_id do
           raise ArgumentError,
@@ -40,26 +44,25 @@ defmodule MPEG.TS.StreamQueue do
       |> Enum.map(&Enum.reverse/1)
       |> Enum.split(-1)
 
-    partials = Qex.new(partials)
-
     pes_packets =
       complete_chunks
       |> Enum.map(&reduce_pes_packet(&1))
       |> Enum.filter(fn x -> x != nil end)
 
-    %__MODULE__{state | partials: partials, ready: Enum.into(pes_packets, ready)}
+    ready = Enum.reduce(pes_packets, ready, fn p, q -> Q.push(q, p) end)
+
+    %__MODULE__{state | partials: partials, ready: ready}
   end
 
   def end_of_stream(state = %__MODULE__{partials: partials, ready: ready}) do
     ready =
       partials
-      |> Enum.into([])
       |> reduce_pes_packet()
       |> List.wrap()
       |> Enum.filter(fn x -> x != nil end)
-      |> Enum.into(ready)
+      |> Enum.reduce(ready, fn p, q -> Q.push(q, p) end)
 
-    %__MODULE__{state | partials: Qex.new(), ready: ready}
+    %__MODULE__{state | partials: [], ready: ready}
   end
 
   def take(state = %__MODULE__{ready: queue}, amount) do
@@ -72,7 +75,7 @@ defmodule MPEG.TS.StreamQueue do
   end
 
   defp take_from_queue(queue, n, items) do
-    case Qex.pop(queue) do
+    case Q.pop(queue) do
       {:empty, queue} ->
         take_from_queue(queue, 0, items)
 

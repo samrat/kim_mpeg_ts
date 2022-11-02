@@ -10,9 +10,9 @@ defmodule MPEG.TS.Demuxer do
   require Logger
 
   @type t :: %__MODULE__{
-          pmt: PMT.t(),
+          pmt: PMT.t() | nil,
           demuxed_queues: %{required(PMT.stream_id_t()) => StreamBuffer.t()},
-          packet_filter: (PMT.stream_id_t() -> Boolean.t()),
+          packet_filter: (PMT.stream_id_t() -> boolean()),
           buffered_bytes: binary()
         }
 
@@ -24,8 +24,8 @@ defmodule MPEG.TS.Demuxer do
     waiting_random_access_indicator: true
   ]
 
-  @spec new(Keyword.t()) :: t()
-  def new(_opts \\ []), do: %__MODULE__{packet_filter: fn _ -> true end}
+  @spec new() :: t()
+  def new(), do: %__MODULE__{packet_filter: fn _ -> true end}
 
   def push_buffer(state, buffer) do
     {ok, bytes_to_buffer} = parse_buffer(state.buffered_bytes <> buffer)

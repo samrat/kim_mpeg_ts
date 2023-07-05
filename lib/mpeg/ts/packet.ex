@@ -170,6 +170,12 @@ defmodule MPEG.TS.Packet do
   defp parse_payload(payload, :payload, :pat), do: {:ok, %{}, payload}
   defp parse_payload(_, _, _), do: {:error, :unsupported_packet}
 
+  defp parse_adaptation_field(<<>>) do
+    # Happens when size of adaptation field is 0.
+    # We saw ffmpeg producing this kind of payloads.
+    {:ok, %{}}
+  end
+
   defp parse_adaptation_field(<<
          discontinuity_indicator::1,
          random_access_indicator::1,

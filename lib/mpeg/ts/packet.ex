@@ -67,16 +67,17 @@ defmodule MPEG.TS.Packet do
          pusi = parse_flag(payload_unit_start_indicator),
          scrambling = parse_scrambling_control(transport_scrambling_control),
          {:ok, adaptation, data} <- parse_payload(optional_fields, adaptation_field_id, pid_class) do
-      packet = %__MODULE__{
-        pusi: pusi,
-        pid: pid,
-        payload: data,
-        scrambling: scrambling,
-        continuity_counter: continuity_counter,
-        discontinuity_indicator: Map.get(adaptation, :discontinuity_indicator, false),
-        random_access_indicator: Map.get(adaptation, :random_access_indicator, false),
-        pcr: Map.get(adaptation, :pcr, nil)
-      }
+      packet =
+        %__MODULE__{
+          pusi: pusi,
+          pid: pid,
+          payload: data,
+          scrambling: scrambling,
+          continuity_counter: continuity_counter,
+          discontinuity_indicator: Map.get(adaptation, :discontinuity_indicator, false),
+          random_access_indicator: Map.get(adaptation, :random_access_indicator, false),
+          pcr: Map.get(adaptation, :pcr, nil)
+        }
 
       {:ok, packet}
     else

@@ -12,9 +12,10 @@ defmodule MPEG.TS.PartialPES do
           data: binary(),
           stream_id: pos_integer(),
           pts: pos_integer(),
-          dts: pos_integer()
+          dts: pos_integer(),
+          aligned?: boolean()
         }
-  defstruct [:data, :stream_id, :pts, :dts]
+  defstruct [:data, :stream_id, :pts, :dts, :aligned?]
 
   require Logger
 
@@ -36,13 +37,15 @@ defmodule MPEG.TS.PartialPES do
     # Packet length is ignored as the field is also allowed to be zero in case
     # the payload is a video elementary stream. If the PES packet length is set
     # to zero, the PES packet can be of any length.
+
     with {:ok, optional, payload} <- parse_optional(optional_fields, has_header?(stream_id)) do
       {:ok,
        %__MODULE__{
          data: payload,
          stream_id: stream_id,
          dts: Map.get(optional, :dts),
-         pts: Map.get(optional, :pts)
+         pts: Map.get(optional, :pts),
+         aligned?: Map.get(optional, :aligned?, false)
        }}
     end
   end
@@ -64,7 +67,7 @@ defmodule MPEG.TS.PartialPES do
            0b10::2,
            _scrambling_control::2,
            _priority::1,
-           _data_alignment_indicator::1,
+           data_alignment_indicator::1,
            _copyright::1,
            _original_or_copy::1,
            pts_dts_indicator::2,
@@ -82,14 +85,21 @@ defmodule MPEG.TS.PartialPES do
        ) do
     pts_dts_indicator = parse_pts_dts_indicator(pts_dts_indicator)
 
-    with {:ok, pts_dts, _rest} <- parse_pts_dts_field(optional_fields, pts_dts_indicator) do
-      {:ok, pts_dts, rest}
+    with {:ok, pts_dts_map, _rest} <- parse_pts_dts_field(optional_fields, pts_dts_indicator) do
+      optionals_map =
+        Map.put(pts_dts_map, :aligned?, parse_data_alignment_indicator(data_alignment_indicator))
+
+      {:ok, optionals_map, rest}
     end
   end
 
   defp parse_optional(_data, _has_header) do
     {:error, :invalid_optional_field}
   end
+
+  defp parse_data_alignment_indicator(0b0), do: false
+
+  defp parse_data_alignment_indicator(0b1), do: true
 
   defp parse_pts_dts_indicator(0b11), do: :pts_and_dts
   defp parse_pts_dts_indicator(0b01), do: :forbidden

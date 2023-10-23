@@ -13,9 +13,9 @@ defmodule MPEG.TS.PartialPES do
           stream_id: pos_integer(),
           pts: pos_integer(),
           dts: pos_integer(),
-          aligned?: boolean()
+          is_aligned: boolean()
         }
-  defstruct [:data, :stream_id, :pts, :dts, :aligned?]
+  defstruct [:data, :stream_id, :pts, :dts, :is_aligned]
 
   require Logger
 
@@ -45,7 +45,7 @@ defmodule MPEG.TS.PartialPES do
          stream_id: stream_id,
          dts: Map.get(optional, :dts),
          pts: Map.get(optional, :pts),
-         aligned?: Map.get(optional, :aligned?, false)
+         is_aligned: Map.get(optional, :is_aligned, false)
        }}
     end
   end
@@ -87,7 +87,11 @@ defmodule MPEG.TS.PartialPES do
 
     with {:ok, pts_dts_map, _rest} <- parse_pts_dts_field(optional_fields, pts_dts_indicator) do
       optionals_map =
-        Map.put(pts_dts_map, :aligned?, parse_data_alignment_indicator(data_alignment_indicator))
+        Map.put(
+          pts_dts_map,
+          :is_aligned,
+          parse_data_alignment_indicator(data_alignment_indicator)
+        )
 
       {:ok, optionals_map, rest}
     end

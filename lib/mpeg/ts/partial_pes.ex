@@ -85,14 +85,9 @@ defmodule MPEG.TS.PartialPES do
        ) do
     pts_dts_indicator = parse_pts_dts_indicator(pts_dts_indicator)
 
-    with {:ok, pts_dts_map, _rest} <- parse_pts_dts_field(optional_fields, pts_dts_indicator) do
-      optionals_map =
-        Map.put(
-          pts_dts_map,
-          :is_aligned,
-          parse_data_alignment_indicator(data_alignment_indicator)
-        )
-
+    with {:ok, optionals_map, _rest} <- parse_pts_dts_field(optional_fields, pts_dts_indicator),
+         {:ok, optionals_map} =
+           parse_data_alignment_indicator(data_alignment_indicator, optionals_map) do
       {:ok, optionals_map, rest}
     end
   end
@@ -101,9 +96,22 @@ defmodule MPEG.TS.PartialPES do
     {:error, :invalid_optional_field}
   end
 
-  defp parse_data_alignment_indicator(0b0), do: false
+  defp parse_data_alignment_indicator(alignment_indicator, optionals_map) do
+    alignment_indicator_flag =
+      case alignment_indicator do
+        0b0 -> false
+        0b1 -> true
+      end
 
-  defp parse_data_alignment_indicator(0b1), do: true
+    optionals_map =
+      Map.put(
+        optionals_map,
+        :is_aligned,
+        alignment_indicator_flag
+      )
+
+    {:ok, optionals_map}
+  end
 
   defp parse_pts_dts_indicator(0b11), do: :pts_and_dts
   defp parse_pts_dts_indicator(0b01), do: :forbidden

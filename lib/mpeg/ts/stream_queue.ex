@@ -102,7 +102,9 @@ defmodule MPEG.TS.StreamQueue do
         data: data,
         stream_id: leader.stream_id,
         pts: leader.pts,
-        dts: leader.dts
+        dts: leader.dts,
+        # the information about alignment should be available in the first `PartialPES`
+        is_aligned: leader.is_aligned
       }
     else
       nil

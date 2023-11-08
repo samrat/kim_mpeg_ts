@@ -27,9 +27,10 @@ defmodule MPEG.TS.Demuxer do
   @spec new() :: t()
   def new(), do: %__MODULE__{packet_filter: fn _ -> true end}
 
-  def push_buffer(state, buffer) do
+  def push_buffer(state, buffer, from, chunk_id) do
     {ok, bytes_to_buffer} = parse_buffer(state.buffered_bytes <> buffer)
-
+    ok = Enum.map(ok, fn ts -> %{ts | from: from, chunk_id: chunk_id} end)
+    if bytes_to_buffer != <<>>, do: Logger.warning("Not all buffers have been processed")
     state = push_packets(%__MODULE__{state | buffered_bytes: <<>>}, ok)
     %__MODULE__{state | buffered_bytes: bytes_to_buffer}
   end

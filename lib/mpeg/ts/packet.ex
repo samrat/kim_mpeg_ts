@@ -22,7 +22,9 @@ defmodule MPEG.TS.Packet do
           scrambling: scrambling_t(),
           discontinuity_indicator: boolean(),
           random_access_indicator: boolean(),
-          pcr: pos_integer()
+          pcr: pos_integer(),
+          from: non_neg_integer() | nil,
+          chunk_id: non_neg_integer()
         }
   @derive {Inspect,
            only: [
@@ -31,7 +33,9 @@ defmodule MPEG.TS.Packet do
              :continuity_counter,
              :discontinuity_indicator,
              :random_access_indicator,
-             :payload
+             :payload,
+             :from,
+             :chunk_id
            ]}
   defstruct [
     :payload,
@@ -41,7 +45,9 @@ defmodule MPEG.TS.Packet do
     :scrambling,
     :discontinuity_indicator,
     :random_access_indicator,
-    :pcr
+    :pcr,
+    :from,
+    :chunk_id
   ]
 
   @type parse_error_t ::

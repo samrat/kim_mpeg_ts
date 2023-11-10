@@ -23,8 +23,7 @@ defmodule MPEG.TS.Packet do
           discontinuity_indicator: boolean(),
           random_access_indicator: boolean(),
           pcr: pos_integer(),
-          from: non_neg_integer() | nil,
-          chunk_id: non_neg_integer()
+          discontinuity: boolean()
         }
   @derive {Inspect,
            only: [
@@ -34,8 +33,7 @@ defmodule MPEG.TS.Packet do
              :discontinuity_indicator,
              :random_access_indicator,
              :payload,
-             :from,
-             :chunk_id
+             :discontinuity
            ]}
   defstruct [
     :payload,
@@ -46,8 +44,7 @@ defmodule MPEG.TS.Packet do
     :discontinuity_indicator,
     :random_access_indicator,
     :pcr,
-    :from,
-    :chunk_id
+    :discontinuity
   ]
 
   @type parse_error_t ::

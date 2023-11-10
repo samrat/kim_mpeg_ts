@@ -14,10 +14,9 @@ defmodule MPEG.TS.PartialPES do
           pts: pos_integer(),
           dts: pos_integer(),
           is_aligned: boolean(),
-          from: non_neg_integer(),
-          chunk_id: non_neg_integer()
+          discontinuity: boolean()
         }
-  defstruct [:data, :stream_id, :pts, :dts, :is_aligned, :from, :chunk_id]
+  defstruct [:data, :stream_id, :pts, :dts, :is_aligned, :discontinuity]
 
   require Logger
 

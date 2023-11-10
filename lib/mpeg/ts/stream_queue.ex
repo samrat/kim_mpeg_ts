@@ -105,8 +105,7 @@ defmodule MPEG.TS.StreamQueue do
         dts: leader.dts,
         # the information about alignment should be available in the first `PartialPES`
         is_aligned: leader.is_aligned,
-        from: leader.from,
-        chunk_id: leader.chunk_id
+        discontinuity: leader.discontinuity
       }
     else
       nil
@@ -116,7 +115,7 @@ defmodule MPEG.TS.StreamQueue do
   defp unmarshal_partial_pes!(packet) do
     case PartialPES.unmarshal(packet.payload, packet.pusi) do
       {:ok, pes} ->
-        %{pes | from: packet.from, chunk_id: packet.chunk_id}
+        %{pes | discontinuity: packet.discontinuity}
 
       {:error, reason} ->
         raise ArgumentError,

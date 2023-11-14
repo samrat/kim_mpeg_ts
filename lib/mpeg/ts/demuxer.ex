@@ -27,7 +27,7 @@ defmodule MPEG.TS.Demuxer do
   @spec new() :: t()
   def new(), do: %__MODULE__{packet_filter: fn _ -> true end}
 
-  def push_buffer(state, buffer, discontinuity) do
+  def push_buffer(state, buffer, discontinuity \\ false) do
     {ok, bytes_to_buffer} = parse_buffer(state.buffered_bytes <> buffer)
 
     ok =
@@ -111,7 +111,7 @@ defmodule MPEG.TS.Demuxer do
       discard_count = length(packets)
 
       if discard_count > 0 do
-        Logger.warn(
+        Logger.warning(
           "Discarding #{discard_count} packets while waiting for random access indicator",
           domain: __MODULE__
         )

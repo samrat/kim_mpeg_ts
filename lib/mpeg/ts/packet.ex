@@ -44,7 +44,7 @@ defmodule MPEG.TS.Packet do
     :discontinuity_indicator,
     :random_access_indicator,
     :pcr,
-    :discontinuity
+    discontinuity: false
   ]
 
   @type parse_error_t ::

@@ -101,30 +101,30 @@ defmodule MPEG.TS.Demuxer do
     %__MODULE__{state | pmt: pmt}
   end
 
-  defp push_es_packets(
-         state = %__MODULE__{waiting_random_access_indicator: true},
-         packets
-       ) do
-    rai = Enum.find_index(packets, fn x -> x.random_access_indicator end)
+  # defp push_es_packets(
+  #        state = %__MODULE__{waiting_random_access_indicator: true},
+  #        packets
+  #      ) do
+  #   rai = Enum.find_index(packets, fn x -> x.random_access_indicator end)
 
-    if rai == nil do
-      discard_count = length(packets)
+  #   if rai == nil do
+  #     discard_count = length(packets)
 
-      if discard_count > 0 do
-        Logger.warning(
-          "Discarding #{discard_count} packets while waiting for random access indicator",
-          domain: __MODULE__
-        )
-      end
+  #     if discard_count > 0 do
+  #       Logger.warning(
+  #         "Discarding #{discard_count} packets while waiting for random access indicator",
+  #         domain: __MODULE__
+  #       )
+  #     end
 
-      state
-    else
-      Logger.debug("Random access indicator found", domain: __MODULE__)
+  #     state
+  #   else
+  #     Logger.debug("Random access indicator found", domain: __MODULE__)
 
-      packets = Enum.slice(packets, Range.new(rai, -1, 1))
-      push_es_packets(%{state | waiting_random_access_indicator: false}, packets)
-    end
-  end
+  #     packets = Enum.slice(packets, Range.new(rai, -1, 1))
+  #     push_es_packets(%{state | waiting_random_access_indicator: false}, packets)
+  #   end
+  # end
 
   defp push_es_packets(
          state = %__MODULE__{demuxed_queues: queues, packet_filter: filter},
